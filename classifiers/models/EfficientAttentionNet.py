@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from attention_block import AttentionBlock
+from blocks.attention_ import AttentionBlock
 
 class EfficientAttentionNet(nn.Module):
     def __init__(self, num_classes=1000):
