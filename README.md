@@ -1,1 +1,1 @@
-# mrlanoma_deep_learning
+# melanoma_deep_learning
