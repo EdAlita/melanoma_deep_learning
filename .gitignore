@@ -163,3 +163,6 @@ data/
 lmdb/
 meldl-3-9/
 training-runs/
+
+*.pth
+
