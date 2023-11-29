@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 BATCH_SIZE = 32
-train_data_path = '../../data/train/'
+train_data_path = '../../data/val/'
 
 
 def get_device():
@@ -88,7 +88,16 @@ def load_models(model, model_paths):
 
 def generate_class_predictions(models, dataloader, device):
     class_predictions = []
-    for X_batch, _ in tqdm(dataloader, desc="Generating Class Predictions"):
+    first_batch = True
+    all_true_labels = []
+
+    for X_batch, y_batch in tqdm(dataloader, desc="Generating Class Predictions"):
+        if first_batch:
+            all_true_labels = y_batch.numpy()  # Store true labels from the first batch
+            first_batch = False
+        else:
+            all_true_labels = np.concatenate((all_true_labels, y_batch.numpy()), axis=0)  # Concatenate subsequent true labels
+
         X_batch = X_batch.to(device)
         batch_predictions = []
         for model in models:
@@ -96,20 +105,25 @@ def generate_class_predictions(models, dataloader, device):
             _, predicted = torch.max(outputs.data, 1)  # Get the class with the highest score
             batch_predictions.append(predicted.cpu())
         class_predictions.append(torch.stack(batch_predictions, dim=1))
-    
-    return torch.cat(class_predictions, dim=0)
+
+    return torch.cat(class_predictions, dim=0), torch.tensor(all_true_labels)
 
 def maximum_voting(predictions):
-    # Assuming predictions is a tensor of shape [num_samples, num_models]
     vote_results = []
+    vote_counts = []  # To store the vote counts for each class
     for i in range(predictions.shape[0]):
         votes = predictions[i]
-        vote_count = torch.bincount(votes, minlength=NUM_CLASSES)  # Replace NUM_CLASSES with your actual number of classes
+        vote_count = torch.bincount(votes, minlength=NUM_CLASSES)  # NUM_CLASSES should be replaced with actual number
         most_voted_class = torch.argmax(vote_count)
         vote_results.append(most_voted_class)
-    return torch.stack(vote_results)
+        vote_counts.append(vote_count)
+    return torch.stack(vote_results), torch.stack(vote_counts)
 
-
+def calculate_accuracy(predictions, true_labels):
+    correct = (predictions == true_labels).sum().item()
+    total = true_labels.size(0)
+    accuracy = correct / total
+    return accuracy
 
 def main():
     device = get_device()
@@ -138,10 +152,18 @@ def main():
     "out/run_1/Inception3_epoch_35.pth",
     "out/run_1/Inception3_epoch_37.pth"]
 
-    # In your main function, replace the relevant parts with:
     models = load_models(inception, model_paths)
-    class_predictions = generate_class_predictions(models, train_loader, device)
-    final_predictions = maximum_voting(class_predictions)
+    class_predictions, true_labels = generate_class_predictions(models, train_loader, device)
+    final_predictions, vote_counts = maximum_voting(class_predictions)
+
+    # Calculate accuracy
+    accuracy = calculate_accuracy(final_predictions, true_labels)
+    print(f"Accuracy of the ensemble: {accuracy * 100:.2f}%")
+
+    # Save predictions to a file
+    with open("predictions.txt", "w") as f:
+        for idx, (pred, true_label) in enumerate(zip(final_predictions, true_labels)):
+            f.write(f"Image {idx}: Predicted Class {pred.item()}, True Class {true_label.item()}, Vote counts: {vote_counts[idx].tolist()}\n")
 
 if __name__ == "__main__":
     main()
