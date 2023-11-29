@@ -86,38 +86,28 @@ def load_models(model, model_paths):
         models.append(model)
     return models
 
-def generate_stacked_predictions(models, dataloader, device):
-    stacked_predictions = []
-    for X_batch, _ in tqdm(dataloader, desc="Generating Predictions"):
+def generate_class_predictions(models, dataloader, device):
+    class_predictions = []
+    for X_batch, _ in tqdm(dataloader, desc="Generating Class Predictions"):
         X_batch = X_batch.to(device)
         batch_predictions = []
         for model in models:
-            predictions = model(X_batch)
-            batch_predictions.append(predictions.detach())
-        stacked_batch = torch.stack(batch_predictions, dim=1)
-        stacked_predictions.append(stacked_batch)
+            outputs = model(X_batch)
+            _, predicted = torch.max(outputs.data, 1)  # Get the class with the highest score
+            batch_predictions.append(predicted.cpu())
+        class_predictions.append(torch.stack(batch_predictions, dim=1))
     
-    return torch.cat(stacked_predictions, dim=0)
+    return torch.cat(class_predictions, dim=0)
 
-
-def train_meta_learner(dataloader, num_epochs=10, device=None):
-    # Assuming the first batch to infer number of base models
-    sample_inputs, _ = next(iter(dataloader))
-    meta_learner = MetaLearnerModel(sample_inputs.size(1)).to(device)
-    criterion = nn.MSELoss()
-    optimizer = optim.Adam(meta_learner.parameters(), lr=0.001)
-
-    for epoch in range(num_epochs):
-        meta_learner.train()  # Set the model to training mode
-        for inputs, targets in tqdm(dataloader, desc=f"Training Epoch {epoch + 1}/{num_epochs}"):
-            inputs, targets = inputs.to(device), targets.to(device)
-            optimizer.zero_grad()
-            outputs = meta_learner(inputs)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
-
-    return meta_learner
+def maximum_voting(predictions):
+    # Assuming predictions is a tensor of shape [num_samples, num_models]
+    vote_results = []
+    for i in range(predictions.shape[0]):
+        votes = predictions[i]
+        vote_count = torch.bincount(votes, minlength=NUM_CLASSES)  # Replace NUM_CLASSES with your actual number of classes
+        most_voted_class = torch.argmax(vote_count)
+        vote_results.append(most_voted_class)
+    return torch.stack(vote_results)
 
 
 
@@ -148,15 +138,10 @@ def main():
     "out/run_1/Inception3_epoch_35.pth",
     "out/run_1/Inception3_epoch_37.pth"]
 
-    models = load_models(inception,model_paths)
-    stacked_predictions = generate_stacked_predictions(models, train_loader, device)
-    
-    y_train = []  # Load your y_train data appropriately
-    meta_dataset = TensorDataset(stacked_predictions, torch.tensor(y_train, dtype=torch.float32))
-    meta_loader = DataLoader(meta_dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-    meta_learner = train_meta_learner(meta_loader, device=device)
-
+    # In your main function, replace the relevant parts with:
+    models = load_models(inception, model_paths)
+    class_predictions = generate_class_predictions(models, train_loader, device)
+    final_predictions = maximum_voting(class_predictions)
 
 if __name__ == "__main__":
     main()
