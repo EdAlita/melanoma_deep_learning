@@ -12,7 +12,6 @@ import time
 from tqdm import tqdm
 from torchsummary import summary
 
-
 BATCH_SIZE = 32
 train_data_path = '../../data/train/'
 
@@ -27,7 +26,6 @@ def create_transforms():
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-
 def load_data(path, transform):
     dataset = ImageFolder(root=path, transform=transform)
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -39,7 +37,6 @@ def load_data(path, transform):
     print(f" - Batch size: {BATCH_SIZE}")
 
     return loader
-
 
 def initialize_models(device):
     inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
@@ -56,7 +53,6 @@ def initialize_models(device):
     print(" - ResNet50 with custom classifier")
 
     return inception_model, resnet50_model
-
 
 def create_optimizers(models):
     return [optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), weight_decay=0.0, amsgrad=False) for model in models]
@@ -117,8 +113,6 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         # Save the model after each epoch
         model_save_path = os.path.join(save_path, f'{model_name}_epoch_{epoch}.pth')
         torch.save(model.state_dict(), model_save_path)
-
-
 
 if __name__ == "__main__":
     device = get_device()
