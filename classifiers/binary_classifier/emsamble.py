@@ -7,9 +7,10 @@ from cnn import CustomClassifier
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from tqdm import tqdm
+import numpy as np
 
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 train_data_path = '../../data/val/'
 
 
@@ -113,7 +114,7 @@ def maximum_voting(predictions):
     vote_counts = []  # To store the vote counts for each class
     for i in range(predictions.shape[0]):
         votes = predictions[i]
-        vote_count = torch.bincount(votes, minlength=NUM_CLASSES)  # NUM_CLASSES should be replaced with actual number
+        vote_count = torch.bincount(votes, minlength=2)  # NUM_CLASSES should be replaced with actual number
         most_voted_class = torch.argmax(vote_count)
         vote_results.append(most_voted_class)
         vote_counts.append(vote_count)
