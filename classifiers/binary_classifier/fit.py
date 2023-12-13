@@ -20,10 +20,10 @@ def get_device():
 
 def create_transforms():
     return transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        transforms.Resize(299),  # Resize the images to 299 x 299 pixels
+        transforms.CenterCrop(299),  # Crop the images to 299 x 299 pixels
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
 def load_data(path, transform):
@@ -114,26 +114,30 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         model_save_path = os.path.join(save_path, f'{model_name}_epoch_{epoch}.pth')
         torch.save(model.state_dict(), model_save_path)
 
-if __name__ == "__main__":
+def main(number_epochs=60,save_dir='out/run_4/',train_dir = train_data_path):
     device = get_device()
     print(f"Using device: {device}")
 
     transform = create_transforms()
-    train_loader = load_data(train_data_path, transform)
+    train_loader = load_data(train_dir, transform)
 
     inception, resnet50_model = initialize_models(device)
 
-    summary(resnet50_model)
+    #summary(resnet50_model)
 
     optimizers = create_optimizers([inception, resnet50_model])
     steps_per_epoch = len(train_loader)
     schedulers = create_schedulers(optimizers, steps_per_epoch)
 
     criterion = torch.nn.CrossEntropyLoss().to(device)
-    num_epochs = 60
+    num_epochs = number_epochs
     
-    model_save_folder = 'out/run_4/'  # Replace with your folder path
+    model_save_folder = save_dir  # Replace with your folder path
 
     
     for model, optimizer, scheduler in zip([inception,resnet50_model], optimizers, schedulers):
         train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs, device,model_save_folder)
+
+if __name__ == "__main__":
+    main()
+

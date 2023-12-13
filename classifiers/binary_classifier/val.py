@@ -5,6 +5,7 @@ from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from cnn import CustomClassifier
 from tqdm import tqdm
+import os
 
 BATCH_SIZE = 32
 validation_data_path = '../../data/val/'
@@ -72,7 +73,7 @@ def inspect_checkpoint(filepath):
     print(checkpoint.keys())
 
 
-def main():
+def main(num_classifiers=33,val_dir = validation_data_path,root_out = 'out/run_4/'):
     device = get_device()
     print(f"Using device: {device}")
     
@@ -81,27 +82,25 @@ def main():
     transform = create_transforms()
 
     # Load your validation dataset
-    val_loader = load_data(validation_data_path, transform)
+    val_loader = load_data(val_dir, transform)
 
     # Path to your model checkpoints
-    model_paths = [f"out/run_1/Inception3_epoch_{i}.pth" for i in range(61)]
+
+    model_paths = [os.path.join(root_out,f'Inception3_epoch_{i}.pth') for i in range(num_classifiers)]
 
     inception, resnet50_model = initialize_models(device)
-
 
     model_accuracies = {}
     for path in tqdm(model_paths, desc="Model Evaluation Progress"):
         model = load_checkpoint(path, device, inception)
         accuracy = evaluate_model(model, val_loader, device)
         model_accuracies[path] = accuracy
-
-    
-
+        
     # Sort models by accuracy
     sorted_models = sorted(model_accuracies.items(), key=lambda x: x[1], reverse=True)
 
     # Select top 12 models
-    top_models = sorted_models[:12]
+    top_models = sorted_models[:6]
     print("Top 12 Models:")
     for i, model in enumerate(top_models, start=1):
         print(f"Rank {i}: Model Path: {model[0]}, Accuracy: {model[1]}")
