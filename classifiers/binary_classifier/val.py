@@ -73,7 +73,7 @@ def inspect_checkpoint(filepath):
     print(checkpoint.keys())
 
 
-def main(num_classifiers=33,val_dir = validation_data_path,root_out = 'out/run_4/'):
+def main(num_classifiers=60,val_dir = validation_data_path,root_out = 'out/run_4/'):
     device = get_device()
     print(f"Using device: {device}")
     
@@ -100,7 +100,7 @@ def main(num_classifiers=33,val_dir = validation_data_path,root_out = 'out/run_4
     sorted_models = sorted(model_accuracies.items(), key=lambda x: x[1], reverse=True)
 
     # Select top 12 models
-    top_models = sorted_models[:6]
+    top_models = sorted_models[:12]
     print("Top 12 Models:")
     for i, model in enumerate(top_models, start=1):
         print(f"Rank {i}: Model Path: {model[0]}, Accuracy: {model[1]}")

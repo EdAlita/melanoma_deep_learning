@@ -6,7 +6,7 @@ class CustomClassifier(nn.Module):
         super(CustomClassifier, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size1)
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.7)
+        self.dropout = nn.Dropout(0.3)
         self.fc2 = nn.Linear(hidden_size1, hidden_size2)
         self.fc3 = nn.Linear(hidden_size2, num_classes)
 
