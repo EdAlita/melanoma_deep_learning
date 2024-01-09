@@ -61,3 +61,24 @@ from several different institutions.
 [^1]: a type of cancer that develops from the pigment-producing cells known as melanocytes.
 [^2]: Nevus (pl.: nevi) is a nonspecific medical term for a visible, circumscribed, chronic lesion of the skin or mucosa
 
+### Binary classification dataset
+
+The binary problem of classifying Nevus images vs all the others. We will give you more than 15000 images, being half of them nevus and the other half a combination of abnormal areas to train the system. The test set will be open the last week of the project
+
+![Binary Dataset](figures/Binary.png)
+*Figure 2: Details of the binary datset*
+
+- 15195 images for training (with ground-truth), approx 50% nevus & lesions
+- 3796 images for validation (with ground-truth), approx 50% nevus & lesions
+-  XXXX images for testing (without ground-truth), unknown distribution
+
+### Multiclass classification dataset
+
+A three-class problem consisting on the classification of cancers: melanoma vs basal cell carcinoma vs squamous cell carcinoma. The training set consists on more than 5000 images, being 50% melanoma, 40% basal cell carcinoma and only 10% squamous cell carcinoma (imbalanced problem).
+
+![Multiclass Dataset](figures/Multi-Class.png)
+*Figure 2: Details of the Multi-class datset*
+
+- 5082 images for training (with gtruth), approx 50% mel / 40% bcc / 10% scc
+- 1270 images for validation (with gtruth), 50% mel / 40% bcc / 10% scc
+- XXXX images for testing (without gtruth), unknown distribution
