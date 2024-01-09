@@ -25,32 +25,6 @@ The primary objectives of the project are as follows:
 2. **Algorithm Development**: Develop and refine algorithms capable of diagnosing melanoma from dermoscopic images. These algorithms should be able to distinguish between nevi and malignant cancers.
 3. **Deep Learning Approach**: Utilize deep learning techniques to enhance the accuracy and reliability of the diagnostic process. This involves a comprehensive review of current literature, followed by the application of advanced deep learning models.
 
-## Folders
-- [**Classifiers**](classifiers): Network architecture, trainning, val and test files.
-- [**Noteebooks**](noteebooks): Notebooks of the implementation of the deep learning classifier.
-- [**Evaluation**](evaluation): Metrics use to evaluated our deep learning implementation.
-- [**Utils**](utils): helping functions.
-- [**Literature**](literature): Journals use to based this implementation.
-- [**Generators**](generators): GAN implementation.
-
-
-## Installation and Usage
-
-### Requirements
-- Python along with additional dependencies listed in a `requirements.txt` file.
-
-### Creating a Virtual Environment
-To avoid conflicts with other Python projects, it's recommended to create a virtual environment:
-1. Install `virtualenv` if you haven't already: `pip install virtualenv`
-2. Create a new virtual environment: `virtualenv venv` (or `python -m venv venv` if using Python's built-in venv)
-3. Activate the virtual environment:
-   - On Windows: `venv\Scripts\activate`
-   - On macOS and Linux: `source venv/bin/activate`
-4. Your command prompt should now show the name of the activated environment.
-
-### Installation
-1. With the virtual environment activated, install the necessary Python packages: `pip install -r requirements.txt`
-
 ## Data Description
 
 The melanoma[^1] detection project utilizes a comprehensive dataset of dermoscopic images. This dataset is pivotal for the training and validation of deep learning models designed to distinguish between benign nevus[^2] and malignant melanoma.
@@ -88,6 +62,36 @@ A three-class problem consisting on the classification of cancers: melanoma vs b
 - 5082 images for training (with gtruth), approx 50% mel / 40% bcc / 10% scc
 - 1270 images for validation (with gtruth), 50% mel / 40% bcc / 10% scc
 - XXXX images for testing (without gtruth), unknown distribution
+
+
+## Folders
+- [**Classifiers**](classifiers): Network architecture, trainning, val and test files.
+- [**Noteebooks**](noteebooks): Notebooks of the implementation of the deep learning classifier.
+- [**Evaluation**](evaluation): Metrics use to evaluated our deep learning implementation.
+- [**Utils**](utils): helping functions.
+- [**Literature**](literature): Journals use to based this implementation.
+- [**Generators**](generators): GAN implementation.
+
+
+## Installation and Usage
+
+### Requirements
+- Python along with additional dependencies listed in a `requirements.txt` file.
+
+### Creating a Virtual Environment
+To avoid conflicts with other Python projects, it's recommended to create a virtual environment:
+1. Install `virtualenv` if you haven't already: `pip install virtualenv`
+2. Create a new virtual environment: `virtualenv venv` (or `python -m venv venv` if using Python's built-in venv)
+3. Activate the virtual environment:
+   - On Windows: `venv\Scripts\activate`
+   - On macOS and Linux: `source venv/bin/activate`
+4. Your command prompt should now show the name of the activated environment.
+
+### Installation
+1. With the virtual environment activated, install the necessary Python packages: `pip install -r requirements.txt`
+
+## Model Architecture
+
 
 ## Contributing
 - [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
