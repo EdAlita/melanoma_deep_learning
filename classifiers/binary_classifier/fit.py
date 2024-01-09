@@ -9,11 +9,11 @@ from torchvision.datasets import ImageFolder
 from torch.utils.data import DataLoader
 import os
 import time
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from torchsummary import summary
 
 BATCH_SIZE = 32
-train_data_path = '../../data_masks/train/'
+train_data_path = '../../data/train/'
 
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -114,10 +114,10 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         model_save_path = os.path.join(save_path, f'{model_name}_epoch_{epoch}.pth')
         torch.save(model.state_dict(), model_save_path)
 
-def main(number_epochs=60,save_dir='out/run_5/',train_dir = train_data_path):
+def main(number_epochs=10,save_dir='out/run_6/',train_dir = train_data_path):
     device = get_device()
     print(f"Using device: {device}")
-
+    print(f"Train data: {train_dir} Out path: {save_dir}")
     transform = create_transforms()
     train_loader = load_data(train_dir, transform)
 

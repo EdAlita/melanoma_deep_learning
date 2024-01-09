@@ -4,10 +4,10 @@ from torchvision.models import inception_v3, resnet50, Inception_V3_Weights, Res
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from cnn import CustomClassifier
-from tqdm import tqdm
+from tqdm.auto import tqdm
 import os
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 validation_data_path = '../../data/val/'
 
 def get_device():
@@ -59,7 +59,7 @@ def evaluate_model(model, val_loader, device):
     total = 0
     correct = 0
     with torch.no_grad():
-        for inputs, labels in tqdm(val_loader, desc="Evaluating", leave=False):
+        for inputs, labels in tqdm(val_loader, desc="Evaluating"):
             inputs, labels = inputs.to(device), labels.to(device)  # Move to the same device as the model
             outputs = model(inputs)
             _, predicted = torch.max(outputs, 1)
@@ -100,7 +100,7 @@ def main(num_classifiers=60,val_dir = validation_data_path,root_out = 'out/run_4
     sorted_models = sorted(model_accuracies.items(), key=lambda x: x[1], reverse=True)
 
     # Select top 12 models
-    top_models = sorted_models[:12]
+    top_models = sorted_models[:5]
     print("Top 12 Models:")
     for i, model in enumerate(top_models, start=1):
         print(f"Rank {i}: Model Path: {model[0]}, Accuracy: {model[1]}")
