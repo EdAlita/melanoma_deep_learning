@@ -26,6 +26,12 @@ The primary objectives of the project are as follows:
 3. **Deep Learning Approach**: Utilize deep learning techniques to enhance the accuracy and reliability of the diagnostic process. This involves a comprehensive review of current literature, followed by the application of advanced deep learning models.
 
 ## Folders
+- [**Classifiers**](classifiers): Network architecture, trainning, val and test files.
+- [**Noteebooks**](noteebooks): Notebooks of the implementation of the deep learning classifier.
+- [**Evaluation**](evaluation): Metrics use to evaluated our deep learning implementation.
+- [**Utils**](utils): helping functions.
+- [**Literature**](literature): Journals use to based this implementation.
+- [**Generators**](generators): GAN implementation.
 
 
 ## Installation and Usage
