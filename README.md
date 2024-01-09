@@ -47,7 +47,7 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 
 ## Data Description
 
-The melanoma([^1]) detection project utilizes a comprehensive dataset of dermoscopic images. This dataset is pivotal for the training and validation of deep learning models designed to distinguish between benign nevus([^2]) and malignant melanoma.
+The melanoma[^1] detection project utilizes a comprehensive dataset of dermoscopic images. This dataset is pivotal for the training and validation of deep learning models designed to distinguish between benign nevus[^2] and malignant melanoma.
 
 The lesion images come from the HAM10000 Dataset (ViDIR Group,
 Medical University of Vienna), the BCN_20000 Dataset (Hospital Clínic de Barcelona) and the MSK Dataset
