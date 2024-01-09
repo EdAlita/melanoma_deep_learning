@@ -58,6 +58,6 @@ from several different institutions.
 ![Sample of Dataset](figures/new_image_3.png)
 *Figure 1: Example of the type of lesion in the dataset*
 
-[^1] : a type of cancer that develops from the pigment-producing cells known as melanocytes.
-[^2] : Nevus (pl.: nevi) is a nonspecific medical term for a visible, circumscribed, chronic lesion of the skin or mucosa
+[^1]: a type of cancer that develops from the pigment-producing cells known as melanocytes.
+[^2]: Nevus (pl.: nevi) is a nonspecific medical term for a visible, circumscribed, chronic lesion of the skin or mucosa
 
