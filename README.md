@@ -4,9 +4,9 @@
 
 1. [**Introduction**](#introduction)
 2. [**Objectives**](#objectives)
-3. [**Folders**](#folders)
-4. [**Installation and Usage**](#installation-and-usage)
-5. [**Data Description**](#data-description)
+3. [**Data Description**](#data-description)
+4. [**Folders**](#folders)
+5. [**Installation and Usage**](#installation-and-usage) 
 6. [**Model Architecture**](#model-architecture)
 7. [**Results**](#results)
 8. [**Contributing**](#contributing)
@@ -82,3 +82,12 @@ A three-class problem consisting on the classification of cancers: melanoma vs b
 - 5082 images for training (with gtruth), approx 50% mel / 40% bcc / 10% scc
 - 1270 images for validation (with gtruth), 50% mel / 40% bcc / 10% scc
 - XXXX images for testing (without gtruth), unknown distribution
+
+## Contributing
+- [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
+- [Edwing Ulin](https://github.com/EdAlita)
+
+## License
+This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE.md](LICENSE) file for details.
+
+## Acknowledgments
