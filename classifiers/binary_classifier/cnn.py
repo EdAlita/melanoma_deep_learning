@@ -9,11 +9,17 @@ class Attention(nn.Module):
         self.feature_dim = feature_dim
         self.attention_weights = nn.Parameter(torch.randn(feature_dim))
 
-    def forward(self, x):
-        # Applying attention weights
+    def forward(self, x, mask):
+        # Ensure mask is a binary mask (0s and 1s) with the same shape as attention_weights
+        assert mask.shape == self.attention_weights.shape, "Mask shape must match attention weights shape"
+        assert torch.all((mask == 0) | (mask == 1)), "Mask must be binary"
+
+        # Applying softmax to attention weights
         weights = F.softmax(self.attention_weights, dim=0)
-        # Weighted sum of input features
-        out = torch.mul(x, weights)
+        # Apply the binary mask
+        masked_weights = weights * mask
+        # Weighted sum of input features with masked weights
+        out = torch.mul(x, masked_weights)
         return out
 
 class CustomClassifier(nn.Module):
@@ -29,7 +35,7 @@ class CustomClassifier(nn.Module):
     def forward(self, x):
         out = self.fc1(x)
         out = self.relu(out)
-        out = self.attention(out) # Apply attention
+        #out = self.attention(out) # Apply attention
         #out = self.dropout(out)
         out = self.fc2(out)
         out = self.relu(out)

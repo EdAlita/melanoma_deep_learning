@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
-from torchvision.models import inception_v3, resnet50, Inception_V3_Weights, ResNet50_Weights
+from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from cnn import CustomClassifier
@@ -22,19 +22,19 @@ def create_transforms():
 
 def initialize_models(device):
     inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    resnet50_model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
+    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
 
     inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    resnet50_model.fc = CustomClassifier(resnet50_model.fc.in_features)
+    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
 
     inception_model = inception_model.to(device)
-    resnet50_model = resnet50_model.to(device)
+    efficientnet_model = efficientnet_model.to(device)
     
     print("Initialized models:")
     print(" - Inception V3 with custom classifier")
-    print(" - ResNet50 with custom classifier")
+    print(" - EfficientNet B0 with custom classifier")
 
-    return inception_model, resnet50_model
+    return efficientnet_model, inception_model
 
 def load_data(path, transform):
     dataset = ImageFolder(root=path, transform=transform)
@@ -72,6 +72,28 @@ def inspect_checkpoint(filepath):
     checkpoint = torch.load(filepath, map_location='cpu')
     print(checkpoint.keys())
 
+def evaluating_best_classifier(val_dir, root_out):
+    device = get_device()
+    print(f"Using device: {device}")
+    
+    transform = create_transforms()
+    val_loader = load_data(val_dir, transform)
+
+    model_paths = {
+        'EfficientNet': os.path.join(root_out, 'EfficientNet_best.pth'),
+        'Inception3': os.path.join(root_out, 'Inception3_best.pth')
+    }
+
+    efficientnet,inception = initialize_models(device)
+
+    for model_name, path in model_paths.items():
+        if model_name == 'Inception3':
+            model = load_checkpoint(path, device, inception)
+        elif model_name == 'EfficientNet':
+            model = load_checkpoint(path, device, efficientnet)
+
+        accuracy = evaluate_model(model, val_loader, device)
+        print(f"Model: {model_name}, Path: {path}, Accuracy: {accuracy}")
 
 def main(num_classifiers=60,val_dir = validation_data_path,root_out = 'out/run_4/'):
     device = get_device()
@@ -88,7 +110,7 @@ def main(num_classifiers=60,val_dir = validation_data_path,root_out = 'out/run_4
 
     model_paths = [os.path.join(root_out,f'Inception3_epoch_{i}.pth') for i in range(num_classifiers)]
 
-    inception, resnet50_model = initialize_models(device)
+    efficientnet_model, inception_model = initialize_models(device)
 
     model_accuracies = {}
     for path in tqdm(model_paths, desc="Model Evaluation Progress"):
