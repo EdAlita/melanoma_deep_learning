@@ -1,6 +1,6 @@
 import os
 import shutil
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 def reorganize_dataset(root_path, target_folder):
     categories = ['bcc', 'mel', 'scc']
