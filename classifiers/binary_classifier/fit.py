@@ -1,4 +1,5 @@
 from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,6 +15,16 @@ from torchsummary import summary
 
 BATCH_SIZE = 16
 train_data_path = '../../data/train/'
+
+# from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+# from torchvision.models._api import WeightsEnum
+# from torch.hub import load_state_dict_from_url
+
+# def get_state_dict(self, *args, **kwargs):
+#     kwargs.pop("check_hash")
+#     return load_state_dict_from_url(self.url, *args, **kwargs)
+# WeightsEnum.get_state_dict = get_state_dict
+
 
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -39,9 +50,13 @@ def load_data(path, transform):
     return loader
 
 def initialize_models(device):
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-
+    try: 
+        inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+        efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
+    except RuntimeError as e:
+        inception_model = inception_v3(pretrained=True)
+        efficientnet_model = efficientnet_b0(pretrained=True)
+        
     inception_model.fc = CustomClassifier(inception_model.fc.in_features)
     efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
 
@@ -115,6 +130,10 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         print(f'{model_name} - Epoch {epoch+1} Completed - Time: {epoch_time:.2f}s')
 
 def main(number_epochs=10, save_dir='out/run_9/', train_dir=train_data_path):
+
+    os.makedirs(save_dir, exist_ok=True)
+    os.makedirs(train_dir, exist_ok=True)
+
     device = get_device()
     print(f"Using device: {device}")
     print(f"Train data: {train_dir} Out path: {save_dir}")
