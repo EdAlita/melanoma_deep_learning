@@ -75,6 +75,32 @@ A three-class problem consisting on the classification of cancers: melanoma vs b
 
 ## Data Manipulation
 
+### Preprocessing
+#### Algorithm Steps
+##### Function Definition
+The function `preprocess` is designed to take an image and apply Contrast Limited Adaptive Histogram Equalization (CLAHE) along with min-max normalization:
+
+```python
+def preprocess(image, clip_limit=2.0, tile_grid_size=(8, 8)):
+    B, G, R = cv2.split(image)
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+    B = clahe.apply(B)
+    G = clahe.apply(G)
+    R = clahe.apply(R)
+    clahe_image = cv2.merge([B, G, R])
+    min_max_normalized_image = cv2.normalize(clahe_image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    return min_max_normalized_image
+```
+##### Step 1: Color Channel Splitting and CLAHE
+- **Splitting Channels**: The image is split into its Blue (B), Green (G), and Red (R) color channels.
+
+- **CLAHE**: Each channel undergoes CLAHE, which enhances the contrast of the image. This step is essential for bringing out hidden features in the image, especially in areas with close-to-similar intensities.
+
+##### Step 2: Merging and Normalization
+- **Merging Channels**: After applying CLAHE, the channels are merged back to form a single image.
+
+- **Normalization**: The merged image then undergoes min-max normalization. This step scales the pixel values to a standard range (0-255 in this case), which is a common practice in image processing for maintaining uniformity across different images.
+
 ### Masks Generation
 
 #### Algorithm Steps
