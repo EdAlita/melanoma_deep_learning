@@ -6,12 +6,13 @@
 2. [**Objectives**](#objectives)
 3. [**Data Description**](#data-description)
 4. [**Folders**](#folders)
-5. [**Installation and Usage**](#installation-and-usage) 
-6. [**Model Architecture**](#model-architecture)
-7. [**Results**](#results)
-8. [**Contributing**](#contributing)
-9. [**License**](#license)
-10. [**Acknowledgments**](#acknowledgments)
+6. [**Data Manipulation**](#data-manipulation)
+7. [**Model Architecture**](#model-architecture)
+8. [**Results**](#results)
+9. [**Contributing**](#contributing)
+10. [**Installation and Usage**](#installation-and-usage)
+11. [**License**](#license)
+12. [**Acknowledgments**](#acknowledgments)
 
 ## Introduction
 
@@ -72,6 +73,90 @@ A three-class problem consisting on the classification of cancers: melanoma vs b
 - [**Literature**](literature): Journals use to based this implementation.
 - [**Generators**](generators): GAN implementation.
 
+## Data Manipulation
+
+### Masks Generation
+
+#### Algorithm Steps
+
+##### Step 1: Preprocessing the Image
+
+First, the image undergoes preprocessing to enhance its contrast and color features.
+
+```python
+import cv2
+import numpy as np
+
+image = cv2.imread('../data/train/others/bkl00763.jpg')
+clip_limit = 2.0
+tile_grid_size = (8, 8)
+
+B, R, G = cv2.split(image)
+clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+B = clahe.apply(B)
+R = clahe.apply(R)
+G = clahe.apply(G)
+image = cv2.merge([B, R, G])
+```
+
+##### Step 2: Gaussian Filtering
+
+The image is smoothed using a Gaussian filter to reduce noise.
+
+```python
+gaussian_filtered = cv2.GaussianBlur(image, (25, 25), 0)
+```
+
+##### Step 3: Conversion to LAB Color Space and Channel Thresholding
+
+The Gaussian-filtered image is converted to the LAB color space, and the mean values of the L, A, and B channels are calculated to be used as thresholds.
+
+```python
+lab_image = cv2.cvtColor(gaussian_filtered, cv2.COLOR_BGR2Lab)
+l_mean = np.mean(lab_image[:, :, 0])
+a_mean = np.mean(lab_image[:, :, 1])
+b_mean = np.mean(lab_image[:, :, 2])
+
+_, l_binary = cv2.threshold(lab_image[:, :, 0], l_mean, 255, cv2.THRESH_BINARY)
+_, a_binary = cv2.threshold(lab_image[:, :, 1], a_mean, 255, cv2.THRESH_BINARY)
+_, b_binary = cv2.threshold(lab_image[:, :, 2], b_mean, 255, cv2.THRESH_BINARY)
+```
+
+##### Step 4: Intersection of Binary Channels
+
+The binary channels are combined to create an intersection image, isolating the regions of interest.
+
+```python
+intersection = cv2.bitwise_and(b_binary, cv2.bitwise_and(a_binary, l_binary))
+```
+
+##### Step 5: Median Filtering
+
+A median filter is applied to the intersection image to reduce noise and smooth edges.
+
+```python
+median_filtered = cv2.medianBlur(intersection, 15)
+```
+
+![Mask Generation Results](figures/maks_generation_algorithm.png)
+*Figure 4: Details of the steps to generate the masks*
+
+## Model Architecture
+### Binary Classification
+
+After a lot of testing of different models, our best approach was using a transfer learning of `inception_v3` with the `Inception_V3_Weights` from the moodle `torchvision.models` version 0.15.2. We use a last classification layers with linear and Relu activations. We use the maxpooling from all the features of the `inception_v3` to get 2048, then a linnear layer to reduce them to 1024 and at last one to reduce them from 512 to 2 classes.
+
+![Binary Dataset work flow](figures/binary_class.png)
+*Figure 5: Details of our Deep Learning layers*
+
+In the next figure you can observe a detail result of our binary result test of different approach of the classifcation problem.
+
+![Binary test results](figures/binary_results.png)
+*Figure 6: Details of Binary testing scheme*
+
+## Contributing
+- [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
+- [Edwing Ulin](https://github.com/EdAlita)
 
 ## Installation and Usage
 
@@ -89,23 +174,6 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 
 ### Installation
 1. With the virtual environment activated, install the necessary Python packages: `pip install -r requirements.txt`
-
-## Model Architecture
-### Binary Classification
-
-After a lot of testing of different models, our best approach was using a transfer learning of `inception_v3` with the `Inception_V3_Weights` from the moodle `torchvision.models` version 0.15.2. We use a last classification layers with linear and Relu activations. We use the maxpooling from all the features of the `inception_v3` to get 2048, then a linnear layer to reduce them to 1024 and at last one to reduce them from 512 to 2 classes.
-
-![Binary Dataset work flow](figures/binary_class.png)
-*Figure 4: Details of our Deep Learning layers*
-
-In the next figure you can observe a detail result of our binary result test of different approach of the classifcation problem.
-
-![Binary test results](figures/binary_results.png)
-*Figure 5: Details of Binary testing scheme*
-
-## Contributing
-- [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
-- [Edwing Ulin](https://github.com/EdAlita)
 
 ## License
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE.md](LICENSE) file for details.
