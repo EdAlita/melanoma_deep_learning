@@ -91,11 +91,17 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 1. With the virtual environment activated, install the necessary Python packages: `pip install -r requirements.txt`
 
 ## Model Architecture
+### Binary Classification
 
 After a lot of testing of different models, our best approach was using a transfer learning of `inception_v3` with the `Inception_V3_Weights` from the moodle `torchvision.models` version 0.15.2. We use a last classification layers with linear and Relu activations. We use the maxpooling from all the features of the `inception_v3` to get 2048, then a linnear layer to reduce them to 1024 and at last one to reduce them from 512 to 2 classes.
 
 ![Binary Dataset work flow](figures/binary_class.png)
 *Figure 4: Details of our Deep Learning layers*
+
+In the next figure you can observe a detail result of our binary result test of different approach of the classifcation problem.
+
+![Binary test results](figures/binary_results.png)
+*Figure 5: Details of Binary testing scheme*
 
 ## Contributing
 - [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
