@@ -24,6 +24,15 @@ def reorganize_dataset(root_path, target_folder):
     progress_bar.close()
 
 if __name__ == "__main__":
-    root_path = '../data/val/others/'
-    target_folder = '../data_mult/val/'
-    reorganize_dataset(root_path, target_folder)
+    parser = argparse.ArgumentParser(description='Reorganize Dataset')
+    parser.add_argument('--root_path', type=str, required=True, 
+                        help='Path to the root directory of the dataset')
+    parser.add_argument('--target_path',type=str, required=True,
+                        help='Path to the tarjet directory for the new dataset')
+                        
+    if not os.path.isdir(args.root_path):
+        raise ValueError(f"The provided root path does not exist: {args.root_path}")
+    if not os.path.isdir(args.target_folder):
+        raise ValueError(f"The provided target folder does not exist: {args.target_folder}")
+    
+    reorganize_dataset(args.root_path, args.target_folder)

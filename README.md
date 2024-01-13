@@ -8,11 +8,10 @@
 4. [**Folders**](#folders)
 6. [**Data Manipulation**](#data-manipulation)
 7. [**Model Architecture**](#model-architecture)
-8. [**Results**](#results)
-9. [**Contributing**](#contributing)
-10. [**Installation and Usage**](#installation-and-usage)
-11. [**License**](#license)
-12. [**Acknowledgments**](#acknowledgments)
+8. [**Contributing**](#contributing)
+9. [**Installation and Usage**](#installation-and-usage)
+10. [**License**](#license)
+11. [**Acknowledgments**](#acknowledgments)
 
 ## Introduction
 
@@ -200,6 +199,34 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 
 ### Installation
 1. With the virtual environment activated, install the necessary Python packages: `pip install -r requirements.txt`
+
+### Usage
+
+### Binary
+
+To fit the model we created the next function that can be call in the next form:
+```bash
+python classifiers/binary_classifier/fit.py ----number_epochs 10 --batch_size 16 --train_dir data/train/ --save_dir out/run_10/
+```
+- `--batch_size`: number of batch to use on the load data part
+- `--number_epochs`: number of epochs to run on the train
+- `--train_dir`: train data directory.
+- `--save_dir`: save data directory.
+
+> Note only run this after creating the destination folder and the learning rate will be roating from a set initial and final depending on the epoch the step is determine.
+
+
+### Multi class
+
+In  order to get the new dataset to train this part, we need to build it from the original dataset. In order to accomplish this we created the next function.
+
+```bash
+python classifiers/organize.py --root_path "../data/val/others/" --target_folder "../data_mult/val/"
+```
+- `--root_path`: is the original folder to rearrange.
+- `--target_folder`: is the destination folder of the new dataset
+
+> Note only run this after creating the destination folder
 
 ## License
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE.md](LICENSE) file for details.
