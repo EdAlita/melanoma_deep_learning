@@ -1,0 +1,30 @@
+{
+"Inception3_epoch48": {
+    "accuracy": 0.90,
+    "drop_rate":0.5
+},
+"Inception3_epoch8": {
+    "accuracy": 0.89,
+    "drop_rate":0.7
+},
+"Inception3_epoch23": {
+    "accuracy": 0.85,
+    "drop_rate":0.3
+},
+"Inception3_epoch23_prepos": {
+    "accuracy": 0.88,
+    "drop_rate": 0
+},
+"Inception3_epoch7_attentionTests": {
+    "accuracy": 0.89,
+    "drop_rate":0
+},
+"Inception3_epoch10": {
+    "accuracy": 0.87,
+    "drop_rate":0
+},
+"EfficientNet_epoch10": {
+    "accuracy": 0.88,
+    "drop_rate":0
+}
+}

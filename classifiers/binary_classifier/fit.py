@@ -12,9 +12,7 @@ import os
 import time
 from tqdm.auto import tqdm
 from torchsummary import summary
-
-BATCH_SIZE = 16
-train_data_path = '../../data/train/'
+import argparse
 
 # from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 # from torchvision.models._api import WeightsEnum
@@ -37,15 +35,15 @@ def create_transforms():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-def load_data(path, transform):
+def load_data(path, transform, batch_size):
     dataset = ImageFolder(root=path, transform=transform)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     print("Loaded dataset:")
     print(f" - Number of images: {len(dataset)}")
     print(f" - Number of classes: {len(dataset.classes)}")
     print(f" - Class names: {dataset.classes}")
-    print(f" - Batch size: {BATCH_SIZE}")
+    print(f" - Batch size: {batch_size}")
 
     return loader
 
@@ -129,18 +127,14 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
         print(f'{model_name} - Epoch {epoch+1} Completed - Time: {epoch_time:.2f}s')
 
-def main(number_epochs=10, save_dir='out/run_9/', train_dir=train_data_path):
-
-    os.makedirs(save_dir, exist_ok=True)
-    os.makedirs(train_dir, exist_ok=True)
-
+def main(number_epochs=10, save_dir='out/run_10/', train_dir='../../data_masks/train/', batch_size = 16):
     device = get_device()
     print(f"Using device: {device}")
     print(f"Train data: {train_dir} Out path: {save_dir}")
     transform = create_transforms()
-    train_loader = load_data(train_dir, transform)
+    train_loader = load_data(train_dir, transform, batch_size)
 
-    inception, efficientnet_model = initialize_models(device)
+    efficientnet_model,inception = initialize_models(device)
 
     optimizers = create_optimizers([inception, efficientnet_model])
     steps_per_epoch = len(train_loader)
@@ -155,5 +149,12 @@ def main(number_epochs=10, save_dir='out/run_9/', train_dir=train_data_path):
         train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs, device, model_save_folder)
 
 if __name__ == "__main__":
-    main()    
+    parser = argparse.ArgumentParser(description='Train a model with command-line arguments.')
+    parser.add_argument('--number_epochs', type=int, default=10, help='Number of epochs to train')
+    parser.add_argument('--save_dir', type=str, default='out/run_10/', help='Directory to save the model')
+    parser.add_argument('--train_dir', type=str, default='../../data_masks/train/', help='Path to training data directory')
+    parser.add_argument('--batch_size', type=int, default=16,help='Number of batch size to load data')
+
+    args = parser.parse_args()
+    main(number_epochs=args.number_epochs, save_dir=args.save_dir, train_dir = args.train_dir, batch_size=args.batch_size)    
        
