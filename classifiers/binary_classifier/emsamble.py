@@ -113,18 +113,12 @@ def main(train_data_path=train_data,run_path='out/run_1/'):
 
 
     model_paths = [
-    f'{run_path}Inception3_epoch_48.pth',
-    f'{run_path}Inception3_epoch_43.pth',
-    f'{run_path}Inception3_epoch_42.pth',
-    f'{run_path}Inception3_epoch_44.pth',
-    f'{run_path}Inception3_epoch_59.pth',
-    f'{run_path}Inception3_epoch_56.pth',
-    f'{run_path}Inception3_epoch_36.pth',
-    f'{run_path}Inception3_epoch_47.pth',
-    f'{run_path}Inception3_epoch_58.pth',
-    f'{run_path}Inception3_epoch_60.pth',
-    f'{run_path}Inception3_epoch_35.pth',
-    f'{run_path}Inception3_epoch_37.pth']
+        f'{run_path}Inception3_epoch_8.pth',
+        f'{run_path}Inception3_epoch_21.pth',
+        f'{run_path}Inception3_epoch_7.pth',
+        f'{run_path}Inception3_epoch_25.pth',
+        f'{run_path}Inception3_epoch_13.pth',
+        f'{run_path}Inception3_epoch_31.pth',]
 
     models = load_models(inception, model_paths)
     class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device)

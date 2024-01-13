@@ -159,10 +159,12 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 data/
+data_masks/
+data_mult/
 ~/
 lmdb/
 meldl-3-9/
 training-runs/
-
+.vscode
 *.pth
-
+prepos/

@@ -1,4 +1,4 @@
-from torchvision.models import inception_v3, resnet50, Inception_V3_Weights, ResNet50_Weights
+from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -16,8 +16,8 @@ from torch.utils.data import WeightedRandomSampler
 from sklearn.metrics import cohen_kappa_score
 
 
-BATCH_SIZE = 32
-train_data_path = '../../data_mult/'
+BATCH_SIZE = 8
+train_data_path = '../../data_mult/train/'
 
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -66,19 +66,19 @@ def load_data(path, transform=None, class_weights=None):
 
 def initialize_models(device):
     inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    resnet50_model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
+    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
 
     inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    resnet50_model.fc = CustomClassifier(resnet50_model.fc.in_features)
+    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
 
     inception_model = inception_model.to(device)
-    resnet50_model = resnet50_model.to(device)
+    efficientnet_model = efficientnet_model.to(device)
     
     print("Initialized models:")
     print(" - Inception V3 with custom classifier")
-    print(" - ResNet50 with custom classifier")
+    print(" - EfficientNet B0 with custom classifier")
 
-    return inception_model, resnet50_model
+    return efficientnet_model, inception_model
 
 def create_optimizers(models):
     return [optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), weight_decay=0.0, amsgrad=False) for model in models]
@@ -138,20 +138,24 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
             # Update the progress bar description with current loss and accuracy
             progress_bar.set_description(f"{model_name} Epoch {epoch+1} - Loss: {running_loss / len(train_loader.dataset):.4f}, Acc: {running_corrects.double() / len(train_loader.dataset):.4f}, Kappa: {cohen_kappa_score(all_labels, all_preds):.4f}")
 
+        val_loss = running_loss / len(train_loader.dataset)
+        
+        if val_loss < best_loss:
+            best_loss = running_loss
+            torch.save(model.state_dict(), os.path.join(save_path, f'{model_name}_best.pth'))
+            print(f'Saved improved model at epoch {epoch+1}')
+
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
         print(f'{model_name} - Epoch {epoch+1} Completed - Time: {epoch_time:.2f}s')
-        
-        # Save the model after each epoch
-        model_save_path = os.path.join(save_path, f'{model_name}_epoch_{epoch}.pth')
-        torch.save(model.state_dict(), model_save_path)
 
-if __name__ == "__main__":
+def main(number_epochs=10, save_dir='out/run_2/', train_dir=train_data_path):
     device = get_device()
     print(f"Using device: {device}")
+    print(f"Train data: {train_dir} Out path: {save_dir}")
 
     transform = create_transforms()
 
-    inception, resnet50_model = initialize_models(device)
+    efficientnet_model, inception = initialize_models(device)
 
     #summary(resnet50_model)
 
@@ -162,14 +166,18 @@ if __name__ == "__main__":
     print(f'Class weigths: {class_weights}')
     criterion = nn.CrossEntropyLoss().to(device)
 
-    optimizers = create_optimizers([inception, resnet50_model])
+    optimizers = create_optimizers([inception, efficientnet_model])
     steps_per_epoch = len(train_loader)
     schedulers = create_schedulers(optimizers, steps_per_epoch)
     
-    num_epochs = 60
+    num_epochs = number_epochs
     
-    model_save_folder = 'out/run_1/'  # Replace with your folder path
+    model_save_folder = save_dir  # Replace with your folder path
 
     
-    for model, optimizer, scheduler in zip([inception,resnet50_model], optimizers, schedulers):
+    for model, optimizer, scheduler in zip([inception,efficientnet_model], optimizers, schedulers):
         train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs, device,model_save_folder)
+
+
+if __name__ == "__main__":
+    main()
