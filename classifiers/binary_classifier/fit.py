@@ -1,4 +1,5 @@
 from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,6 +13,16 @@ import time
 from tqdm.auto import tqdm
 from torchsummary import summary
 import argparse
+
+# from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+# from torchvision.models._api import WeightsEnum
+# from torch.hub import load_state_dict_from_url
+
+# def get_state_dict(self, *args, **kwargs):
+#     kwargs.pop("check_hash")
+#     return load_state_dict_from_url(self.url, *args, **kwargs)
+# WeightsEnum.get_state_dict = get_state_dict
+
 
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -37,9 +48,13 @@ def load_data(path, transform, batch_size):
     return loader
 
 def initialize_models(device):
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-
+    try: 
+        inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+        efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
+    except RuntimeError as e:
+        inception_model = inception_v3(pretrained=True)
+        efficientnet_model = efficientnet_b0(pretrained=True)
+        
     inception_model.fc = CustomClassifier(inception_model.fc.in_features)
     efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
 
