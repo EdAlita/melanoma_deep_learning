@@ -57,7 +57,7 @@ The binary problem of classifying Nevus images vs all the others. We will give y
 A three-class problem consisting on the classification of cancers: melanoma vs basal cell carcinoma vs squamous cell carcinoma. The training set consists on more than 5000 images, being 50% melanoma, 40% basal cell carcinoma and only 10% squamous cell carcinoma (imbalanced problem).
 
 ![Multiclass Dataset](figures/Multi-Class.png)
-*Figure 2: Details of the Multi-class datset*
+*Figure 3: Details of the Multi-class datset*
 
 - 5082 images for training (with gtruth), approx 50% mel / 40% bcc / 10% scc
 - 1270 images for validation (with gtruth), 50% mel / 40% bcc / 10% scc
@@ -92,6 +92,10 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 
 ## Model Architecture
 
+After a lot of testing of different models, our best approach was using a transfer learning of `inception_v3` with the `Inception_V3_Weights` from the moodle `torchvision.models` version 0.15.2. We use a last classification layers with linear and Relu activations. We use the maxpooling from all the features of the `inception_v3` to get 2048, then a linnear layer to reduce them to 1024 and at last one to reduce them from 512 to 2 classes.
+
+![Binary Dataset work flow](figures/binary_class.png)
+*Figure 4: Details of our Deep Learning layers*
 
 ## Contributing
 - [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
