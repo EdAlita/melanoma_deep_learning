@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from generators import cGAN
+from generators import cGAN, PCGAN
 from prepare_dataset import LesionDataset
 
 from tqdm import tqdm 
@@ -24,8 +24,8 @@ g_lr=1e-4
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-generator = cGAN.Generator().to(device)
-discriminator = cGAN.Discriminator().to(device)
+generator = PCGAN.Generator().to(device)
+discriminator = PCGAN.Discriminator().to(device)
 
 criterion = nn.BCELoss()
 d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=d_lr)
@@ -74,15 +74,17 @@ def train(train_loader):
             real_images = Variable(images).to(device)
             labels = Variable(labels).to(device)
             generator.train()
-
+            
+            g_loss = generator_train_step(BATCH_SIZE, discriminator, generator, g_optimizer, criterion)
+            print("I passed one iter")
             d_loss = 0
+
             for _ in range(n_critic):
                 d_loss = discriminator_train_step(len(real_images), discriminator,
                                                 generator, d_optimizer, criterion,
                                                 real_images, labels)
 
 
-            g_loss = generator_train_step(BATCH_SIZE, discriminator, generator, g_optimizer, criterion)
 
             writer.add_scalars('scalars', {'g_loss': g_loss, 'd_loss': (d_loss / n_critic)}, step)
 
