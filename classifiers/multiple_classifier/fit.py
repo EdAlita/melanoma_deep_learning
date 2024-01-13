@@ -16,8 +16,6 @@ from torch.utils.data import WeightedRandomSampler
 from sklearn.metrics import cohen_kappa_score
 
 
-BATCH_SIZE = 8
-train_data_path = '../../data_mult/train/'
 
 def get_device():
     return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -39,7 +37,7 @@ def create_transforms():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-def load_data(path, transform=None, class_weights=None):
+def load_data(path, transform=None, class_weights=None,batch_size=BATCH_SIZE):
     if not os.path.exists(path):
         raise ValueError(f"The provided path {path} does not exist.")
 
@@ -49,7 +47,7 @@ def load_data(path, transform=None, class_weights=None):
     weights = class_weights[dataset.targets]
     sampler = WeightedRandomSampler(weights, len(dataset))
 
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, sampler=sampler)
+    loader = DataLoader(dataset, batch_size=batch_size, sampler=sampler)
 
     image_count = Counter([dataset.targets[i] for i in range(len(dataset))])
     class_image_count = {dataset.classes[k]: v for k, v in image_count.items()}
@@ -60,7 +58,7 @@ def load_data(path, transform=None, class_weights=None):
     print(f" - Class names: {dataset.classes}")
     for class_name, count in class_image_count.items():
         print(f" -- {class_name}: {count} images")
-    print(f" - Batch size: {BATCH_SIZE}")
+    print(f" - Batch size: {batch_size}")
 
     return loader
 
@@ -148,7 +146,7 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
         print(f'{model_name} - Epoch {epoch+1} Completed - Time: {epoch_time:.2f}s')
 
-def main(number_epochs=10, save_dir='out/run_2/', train_dir=train_data_path):
+def main(number_epochs=10, save_dir='out/run_10/', train_dir='../../data_masks/train/', batch_size = 16):
     device = get_device()
     print(f"Using device: {device}")
     print(f"Train data: {train_dir} Out path: {save_dir}")

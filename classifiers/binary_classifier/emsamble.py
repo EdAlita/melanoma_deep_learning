@@ -114,24 +114,25 @@ def main(train_data_path=train_data,run_path='out/run_1/'):
 
     model_paths = [
         f'{run_path}Inception3_epoch_8.pth',
-        f'{run_path}Inception3_epoch_21.pth',
-        f'{run_path}Inception3_epoch_7.pth',
-        f'{run_path}Inception3_epoch_25.pth',
-        f'{run_path}Inception3_epoch_13.pth',
-        f'{run_path}Inception3_epoch_31.pth',]
+        #f'{run_path}Inception3_epoch_21.pth',
+        #f'{run_path}Inception3_epoch_7.pth',
+        #f'{run_path}Inception3_epoch_25.pth',
+        #f'{run_path}Inception3_epoch_13.pth',
+        #f'{run_path}Inception3_epoch_31.pth',
+        ]
 
     models = load_models(inception, model_paths)
     class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device)
-    final_predictions, vote_counts = maximum_voting(class_predictions)
+    #final_predictions, vote_counts = maximum_voting(class_predictions)
 
-    accuracy = calculate_accuracy(final_predictions, true_labels)
+    accuracy = calculate_accuracy(class_predictions, true_labels)
     print(f"Accuracy of the ensemble: {accuracy * 100:.2f}%")
 
     class_names = train_loader.dataset.classes
     with open("predictions.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["image_name", "class_number", "class_name"])
-        for idx, pred in enumerate(final_predictions):
+        for idx, pred in enumerate(class_predictions):
             image_path = image_names[idx]
             image_name = image_path.split('/')[-1]
             class_number = pred.item()

@@ -202,7 +202,19 @@ To avoid conflicts with other Python projects, it's recommended to create a virt
 
 ### Usage
 
-### Binary
+In  order to get the new dataset to train this part, we need to build it from the original dataset. In order to accomplish this we created the next function.
+
+```bash
+python classifiers/organize.py --root_path "../data/val/others/" --target_folder "../data_mult/val/"
+```
+- `--root_path`: is the original folder to rearrange.
+- `--target_folder`: is the destination folder of the new dataset
+
+> Note only run this after creating the destination folder
+
+
+### Fitting
+This function are share with binary and multi. Only change the folder name and the dataset used.
 
 To fit the model we created the next function that can be call in the next form:
 ```bash
@@ -213,20 +225,21 @@ python classifiers/binary_classifier/fit.py ----number_epochs 10 --batch_size 16
 - `--train_dir`: train data directory.
 - `--save_dir`: save data directory.
 
-> Note only run this after creating the destination folder and the learning rate will be roating from a set initial and final depending on the epoch the step is determine.
+> Note, only run this after creating the destination folder and the learning rate will be roating from a set initial and final depending on the epoch the step is determine.
 
+### Validation
 
-### Multi class
-
-In  order to get the new dataset to train this part, we need to build it from the original dataset. In order to accomplish this we created the next function.
-
+To validate the model we created the next function that can be call in the next form:
 ```bash
-python classifiers/organize.py --root_path "../data/val/others/" --target_folder "../data_mult/val/"
+python classifiers/multiple_classifier/val.py --mode best --val_dir data/val/ --root_out out/run_4/ --batch_size 16
 ```
-- `--root_path`: is the original folder to rearrange.
-- `--target_folder`: is the destination folder of the new dataset
+- `--batch_size`: number of batch to use on the load data part.
+- `--val_dir`: validation data directory.
+- `--root_out`: folder of the save instances.
+- `--train_dir`: train data directory.
+- `--mode`: used the `best`
 
-> Note only run this after creating the destination folder
+> Note, the `normal` mode is only used if you have instances from the last versions of fit.
 
 ## License
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the [LICENSE.md](LICENSE) file for details.

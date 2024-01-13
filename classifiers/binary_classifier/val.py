@@ -66,7 +66,7 @@ def evaluate_model(model, val_loader, device):
     return correct / total
 
 
-def inspect_checkpoint(filepath):
+def initialize_models(filepath):
     checkpoint = torch.load(filepath, map_location='cpu')
     print(checkpoint.keys())
 
