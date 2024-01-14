@@ -67,10 +67,7 @@ A three-class problem consisting on the classification of cancers: melanoma vs b
 ## Folders
 - [**Classifiers**](classifiers): Network architecture, trainning, val and test files.
 - [**Noteebooks**](noteebooks): Notebooks of the implementation of the deep learning classifier.
-- [**Evaluation**](evaluation): Metrics use to evaluated our deep learning implementation.
-- [**Utils**](utils): helping functions.
 - [**Literature**](literature): Journals use to based this implementation.
-- [**Generators**](generators): GAN implementation.
 
 ## Data Manipulation
 
