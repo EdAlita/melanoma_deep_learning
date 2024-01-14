@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-from torchvision.models import inception_v3, resnet50, Inception_V3_Weights, ResNet50_Weights
+from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
 from cnn import CustomClassifier
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
@@ -26,20 +26,24 @@ def create_transforms():
     ])
 
 def initialize_models(device):
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    resnet50_model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
-
+    try: 
+        inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
+        efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
+    except RuntimeError as e:
+        inception_model = inception_v3(pretrained=True)
+        efficientnet_model = efficientnet_b0(pretrained=True)
+        
     inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    resnet50_model.fc = CustomClassifier(resnet50_model.fc.in_features)
+    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
 
     inception_model = inception_model.to(device)
-    resnet50_model = resnet50_model.to(device)
+    efficientnet_model = efficientnet_model.to(device)
     
     print("Initialized models:")
     print(" - Inception V3 with custom classifier")
-    print(" - ResNet50 with custom classifier")
+    print(" - EfficientNet B0 with custom classifier")
 
-    return inception_model, resnet50_model
+    return efficientnet_model, inception_model
 
 def load_data(path, transform):
     dataset = ImageFolder(root=path, transform=transform)
@@ -103,11 +107,11 @@ def calculate_accuracy(predictions, true_labels):
     accuracy = correct / total
     return accuracy
 
-def main(train_data_path=train_data,run_path='out/run_1/'):
+def main(train_data_path=train_data,run_path='out/run_1/',type='val'):
     device = get_device()
     print(f"Using device: {device}")
 
-    inception, resnet50_model = initialize_models(device)
+    _ , inception= initialize_models(device)
 
 
     transform = create_transforms()
@@ -117,31 +121,31 @@ def main(train_data_path=train_data,run_path='out/run_1/'):
 
     model_paths = [
     f'{run_path}Inception3_epoch_31.pth', # Rank 1, Accuracy: 0.9228, Kappa: 0.8589
-    f'{run_path}Inception3_epoch_32.pth', # Rank 2, Accuracy: 0.9181, Kappa: 0.8497
-    f'{run_path}Inception3_epoch_28.pth', # Rank 3, Accuracy: 0.9173, Kappa: 0.8474
-    f'{run_path}Inception3_epoch_22.pth', # Rank 4, Accuracy: 0.9165, Kappa: 0.8474
-    f'{run_path}Inception3_epoch_36.pth', # Rank 5, Accuracy: 0.9165, Kappa: 0.8471
-    f'{run_path}Inception3_epoch_30.pth', # Rank 6, Accuracy: 0.9165, Kappa: 0.8468
-    f'{run_path}Inception3_epoch_20.pth', # Rank 7, Accuracy: 0.9165, Kappa: 0.8466
-    f'{run_path}Inception3_epoch_38.pth', # Rank 8, Accuracy: 0.9150, Kappa: 0.8439
-    f'{run_path}Inception3_epoch_21.pth', # Rank 9, Accuracy: 0.9150, Kappa: 0.8435
-    f'{run_path}Inception3_epoch_26.pth', # Rank 10, Accuracy: 0.9142, Kappa: 0.8433
-    f'{run_path}Inception3_epoch_27.pth', # Rank 11, Accuracy: 0.9142, Kappa: 0.8431
-    f'{run_path}Inception3_epoch_16.pth', # Rank 12, Accuracy: 0.9142, Kappa: 0.8429
+    #f'{run_path}Inception3_epoch_32.pth', # Rank 2, Accuracy: 0.9181, Kappa: 0.8497
+    #f'{run_path}Inception3_epoch_28.pth', # Rank 3, Accuracy: 0.9173, Kappa: 0.8474
+    #f'{run_path}Inception3_epoch_22.pth', # Rank 4, Accuracy: 0.9165, Kappa: 0.8474
+    #f'{run_path}Inception3_epoch_36.pth', # Rank 5, Accuracy: 0.9165, Kappa: 0.8471
+    #f'{run_path}Inception3_epoch_30.pth', # Rank 6, Accuracy: 0.9165, Kappa: 0.8468
+    #f'{run_path}Inception3_epoch_20.pth', # Rank 7, Accuracy: 0.9165, Kappa: 0.8466
+    #f'{run_path}Inception3_epoch_38.pth', # Rank 8, Accuracy: 0.9150, Kappa: 0.8439
+    #f'{run_path}Inception3_epoch_21.pth', # Rank 9, Accuracy: 0.9150, Kappa: 0.8435
+    #f'{run_path}Inception3_epoch_26.pth', # Rank 10, Accuracy: 0.9142, Kappa: 0.8433
+    #f'{run_path}Inception3_epoch_27.pth', # Rank 11, Accuracy: 0.9142, Kappa: 0.8431
+    #f'{run_path}Inception3_epoch_16.pth', # Rank 12, Accuracy: 0.9142, Kappa: 0.8429
     ]
 
 
     models = load_models(inception, model_paths)
     class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device)
     final_predictions, vote_counts = maximum_voting(class_predictions)
-
-    accuracy = calculate_accuracy(final_predictions, true_labels)
-    print(f"Accuracy of the ensemble: {accuracy * 100:.2f}%")
-    kappa = cohen_kappa_score(final_predictions.numpy(), true_labels.numpy())
-    print(f"Cohen's Kappa: {kappa:.4f}")
+    if type == 'val':
+        accuracy = calculate_accuracy(final_predictions, true_labels)
+        print(f"Accuracy of the ensemble: {accuracy * 100:.2f}%")
+        kappa = cohen_kappa_score(final_predictions.numpy(), true_labels.numpy())
+        print(f"Cohen's Kappa: {kappa:.4f}")
     
     class_names = train_loader.dataset.classes
-    with open("predictions.csv", "w", newline="") as csvfile:
+    with open(f"predictions_mult_{type}.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["image_name", "class_number", "class_name"])
         for idx, pred in enumerate(final_predictions):
@@ -151,7 +155,7 @@ def main(train_data_path=train_data,run_path='out/run_1/'):
             class_name = class_names[class_number]
             csvwriter.writerow([image_name, class_number, class_name])
 
-    with open("detailed_predictions.txt", "w") as f:
+    with open(f"detailed_predictions_mult_{type}.txt", "w") as f:
         for idx, (pred, true_label) in enumerate(zip(final_predictions, true_labels)):
             f.write(f"Image {idx}: Predicted Class {pred.item()}, True Class {true_label.item()}, Vote counts: {vote_counts[idx].tolist()}\n")
 

@@ -1,50 +1,9 @@
 import torch
-from torch.utils.data import DataLoader
-from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
-from cnn import CustomClassifier
 from tqdm.auto import tqdm
 import os
 import argparse
+from utils import get_device, create_transforms, initialize_models, load_data
 
-def get_device():
-    return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-def create_transforms():
-    return transforms.Compose([
-        transforms.Resize((299, 299)),  # Adjusted for Inception V3
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-def initialize_models(device):
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-
-    inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
-
-    inception_model = inception_model.to(device)
-    efficientnet_model = efficientnet_model.to(device)
-    
-    print("Initialized models:")
-    print(" - Inception V3 with custom classifier")
-    print(" - EfficientNet B0 with custom classifier")
-
-    return efficientnet_model, inception_model
-
-def load_data(path, transform,BATCH_SIZE):
-    dataset = ImageFolder(root=path, transform=transform)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-    print("Loaded dataset:")
-    print(f" - Number of images: {len(dataset)}")
-    print(f" - Number of classes: {len(dataset.classes)}")
-    print(f" - Class names: {dataset.classes}")
-    print(f" - Batch size: {BATCH_SIZE}")
-
-    return loader
 
 def load_checkpoint(filepath, device, model):
     checkpoint = torch.load(filepath, map_location=torch.device(device))
@@ -120,7 +79,7 @@ def main(num_classifiers=60,val_dir = '../../data/val/',root_out = 'out/run_4/',
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='nomal or best models validation.')
-    parser.add_argument('--mode', choices=['train', 'best'], required=True, help='Choose "normal" to run main or "best" to run evaluating_best_classifier')
+    parser.add_argument('--mode', choices=['train', 'best'], required=True, help='Choose "normal" to run main or "best" to run evaluating_best_classifier [Normal options use if you have results from v 1.1]')
     
     # Arguments for both functions
     parser.add_argument('--val_dir', type=str, default='../../data/val/', help='Path to validation data directory')
@@ -128,7 +87,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size for data loading')
 
     # Arguments specific to main()
-    parser.add_argument('--num_classifiers', type=int, default=60, help='Number of classifiers for main function')
+    parser.add_argument('--num_classifiers', type=int, default=60, help='Number of classifiers for main function [Used in normal DEPRECATED]')
 
     args = parser.parse_args()
 

@@ -21,7 +21,7 @@ class CustomClassifier(nn.Module):
         super(CustomClassifier, self).__init__()
         self.fc1 = nn.Linear(input_size, hidden_size1)
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.3)
+        self.dropout = nn.Dropout(0.4)
         self.attention = Attention(hidden_size1) # Attention layer
         self.fc2 = nn.Linear(hidden_size1, hidden_size2)
         self.fc3 = nn.Linear(hidden_size2, num_classes)
@@ -29,7 +29,7 @@ class CustomClassifier(nn.Module):
     def forward(self, x):
         out = self.fc1(x)
         out = self.relu(out)
-        out = self.attention(out) # Apply attention
+        #out = self.attention(out) # Apply attention
         out = self.dropout(out)
         out = self.fc2(out)
         out = self.relu(out)

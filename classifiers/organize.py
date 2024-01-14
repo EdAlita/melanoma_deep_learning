@@ -1,6 +1,7 @@
 import os
 import shutil
 from tqdm.auto import tqdm
+import argparse
 
 def reorganize_dataset(root_path, target_folder):
     categories = ['bcc', 'mel', 'scc']
@@ -29,10 +30,12 @@ if __name__ == "__main__":
                         help='Path to the root directory of the dataset')
     parser.add_argument('--target_path',type=str, required=True,
                         help='Path to the tarjet directory for the new dataset')
-                        
+    """                   
     if not os.path.isdir(args.root_path):
         raise ValueError(f"The provided root path does not exist: {args.root_path}")
     if not os.path.isdir(args.target_folder):
         raise ValueError(f"The provided target folder does not exist: {args.target_folder}")
-    
-    reorganize_dataset(args.root_path, args.target_folder)
+    """
+    args = parser.parse_args()
+
+    reorganize_dataset(args.root_path, args.target_path)

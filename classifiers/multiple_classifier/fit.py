@@ -14,6 +14,7 @@ from torchsummary import summary
 from collections import Counter
 from torch.utils.data import WeightedRandomSampler
 from sklearn.metrics import cohen_kappa_score
+import argparse
 
 
 
@@ -37,7 +38,21 @@ def create_transforms():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-def load_data(path, transform=None, class_weights=None,batch_size=BATCH_SIZE):
+def load_data(path, transform=None, class_weights=None,batch_size=16):
+    """Loader from the data
+
+    Args:
+        path (str): path from the data to use during trainning
+        transform (_type_, optional): _description_. Defaults to None.
+        class_weights (_type_, optional): _description_. Defaults to None.
+        batch_size (int, optional): _description_. Defaults to 16.
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: _description_
+    """
     if not os.path.exists(path):
         raise ValueError(f"The provided path {path} does not exist.")
 
@@ -63,6 +78,14 @@ def load_data(path, transform=None, class_weights=None,batch_size=BATCH_SIZE):
     return loader
 
 def initialize_models(device):
+    """initialize the models to use
+
+    Args:
+        device (str): Device use during trainning
+
+    Returns:
+        torch.models: initialized models for trainning
+    """
     inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
     efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
 
@@ -79,16 +102,59 @@ def initialize_models(device):
     return efficientnet_model, inception_model
 
 def create_optimizers(models):
+    """Creates the optimazer for each model
+
+    Args:
+        models (torch.model): model to create the optimazer
+
+    Returns:
+        torch.optim: optimazer to use
+    """
     return [optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), weight_decay=0.0, amsgrad=False) for model in models]
 
 def create_schedulers(optimizers, steps_per_epoch):
+    """Creates de schedulers from the optimizer and the number of epochs
+
+    Args:
+        optimizers (torch.optim): Optimazer used in the trainning
+        steps_per_epoch (int): len of data per epoch
+
+    Returns:
+        torch.optim.lr_scheduler: Scheduler with the learning rates to test
+    """
     base_lr, max_lr = 0.00001, 0.0001
     return [CyclicLR(optimizer, base_lr=base_lr, max_lr=max_lr, step_size_up=4*steps_per_epoch, mode='triangular2', cycle_momentum=False) for optimizer in optimizers]
 
-def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs, device, save_path):
+def train_model(model,
+                optimizer, 
+                scheduler, 
+                train_loader, 
+                criterion, 
+                num_epochs:int, 
+                device, 
+                save_path,
+                early_stopping_threshold:float=0.01,
+                patience=5
+    ):
+    """Multiple Class Trainer
+
+    Args:
+        model (torchvision_model): model to train
+        optimizer (torch.optim): optimazer to use
+        scheduler (lr_scheduler): scheduler to move the learning rate
+        train_loader (dataloader): loader for the data
+        criterion (nn.criterion): Criterion use to optimize
+        num_epochs (int): numer to epochs to run
+        device (str): name of device to use cpu or gpu
+        save_path (path): path to save the best classiffier
+        early_stopping_threshold (float, optional): erly stopping criteria to use. Defaults to 0.01.
+        patience (int, optional): Loops without any improvement to stop. Defaults to 5.
+    """
     model_name = type(model).__name__
     best_loss = float('inf')
     epochs_no_improve = 0
+    no_improvement_count = 0  # Initialize the patience counter
+    early_stop = False  # Flag for early stopping
 
     for epoch in range(num_epochs):
         start_time = time.time()  # Start time for the epoch
@@ -138,15 +204,26 @@ def train_model(model, optimizer, scheduler, train_loader, criterion, num_epochs
 
         val_loss = running_loss / len(train_loader.dataset)
         
+       # Check for improvement in validation loss
         if val_loss < best_loss:
-            best_loss = running_loss
+            best_loss = val_loss
+            no_improvement_count = 0  # Reset the patience counter
             torch.save(model.state_dict(), os.path.join(save_path, f'{model_name}_best.pth'))
             print(f'Saved improved model at epoch {epoch+1}')
+        else:
+            # No improvement in validation loss
+            no_improvement_count += 1
+            print(f'No improvement in validation loss for {no_improvement_count} epochs.')
+
+        # Check if early stopping is needed
+        if no_improvement_count >= patience:
+            if abs(best_loss - val_loss) < early_stopping_threshold:
+                print(f'Early stopping triggered at epoch {epoch+1}')
 
         epoch_time = time.time() - start_time  # Calculate time taken for the epoch
         print(f'{model_name} - Epoch {epoch+1} Completed - Time: {epoch_time:.2f}s')
 
-def main(number_epochs=10, save_dir='out/run_10/', train_dir='../../data_masks/train/', batch_size = 16):
+def main(number_epochs=10, save_dir='out/run_2/', train_dir='../../data_mult/train/', batch_size = 16):
     device = get_device()
     print(f"Using device: {device}")
     print(f"Train data: {train_dir} Out path: {save_dir}")
@@ -155,11 +232,8 @@ def main(number_epochs=10, save_dir='out/run_10/', train_dir='../../data_masks/t
 
     efficientnet_model, inception = initialize_models(device)
 
-    #summary(resnet50_model)
-
-
-    class_weights = calculate_class_weights(ImageFolder(root=train_data_path))
-    train_loader = load_data(train_data_path, transform, class_weights)
+    class_weights = calculate_class_weights(ImageFolder(root=train_dir))
+    train_loader = load_data(path=train_dir, transform=transform, class_weights=class_weights,batch_size=batch_size)
 
     print(f'Class weigths: {class_weights}')
     criterion = nn.CrossEntropyLoss().to(device)
@@ -178,4 +252,11 @@ def main(number_epochs=10, save_dir='out/run_10/', train_dir='../../data_masks/t
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Train a model with command-line arguments.')
+    parser.add_argument('--number_epochs', type=int, default=10, help='Number of epochs to train')
+    parser.add_argument('--save_dir', type=str, default='out/run_10/', help='Directory to save the model')
+    parser.add_argument('--train_dir', type=str, default='../../data_masks/train/', help='Path to training data directory')
+    parser.add_argument('--batch_size', type=int, default=16,help='Number of batch size to load data')
+
+    args = parser.parse_args()
+    main(number_epochs=args.number_epochs, save_dir=args.save_dir, train_dir = args.train_dir, batch_size=args.batch_size) 
