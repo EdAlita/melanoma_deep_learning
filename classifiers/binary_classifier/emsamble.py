@@ -5,8 +5,6 @@ import csv
 from utils import get_device, create_transforms, initialize_models, load_data
 import argparse
 
-train_data = '../../data/val/'
-
 def load_models(model, model_paths):
     models = []
     for path in model_paths:

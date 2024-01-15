@@ -1,30 +1,30 @@
 {
 "Inception3_epoch48": {
-    "accuracy": 0.90,
+    "accuracy": 0.8993,
     "drop_rate":0.5
 },
 "Inception3_epoch8": {
-    "accuracy": 0.89,
+    "accuracy": 0.8890,
     "drop_rate":0.7
 },
 "Inception3_epoch23": {
-    "accuracy": 0.85,
+    "accuracy": 0.8472,
     "drop_rate":0.3
 },
 "Inception3_epoch23_prepos": {
-    "accuracy": 0.88,
+    "accuracy": 0.8788,
     "drop_rate": 0
 },
 "Inception3_epoch7_attentionTests": {
-    "accuracy": 0.89,
+    "accuracy": 0.8883,
     "drop_rate":0
 },
 "Inception3_epoch10": {
-    "accuracy": 0.87,
+    "accuracy": 0.8790,
     "drop_rate":0
 },
 "EfficientNet_epoch10": {
-    "accuracy": 0.88,
+    "accuracy": 0.8751,
     "drop_rate":0
 }
 }

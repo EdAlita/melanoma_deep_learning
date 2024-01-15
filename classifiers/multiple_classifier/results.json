@@ -1,6 +1,18 @@
 {
-"Inception3_epoch48": {
-    "accuracy": 0.90,
-    "drop_rate":0.5
+"EfficientNet_epoch10": {
+    "accuracy": 0.9173,
+    "Kappa":0.8504
+},
+"Inception3_epoch10": {
+    "accuracy": 0.9228,
+    "Kappa":0.8594
+},
+"EfficientNet_epoch20": {
+    "accuracy": 0.9307,
+    "Kappa":0.8740
+},
+"Inception3_epoch20": {
+    "accuracy": 0.9102,
+    "Kappa":0.8373
 }
 }

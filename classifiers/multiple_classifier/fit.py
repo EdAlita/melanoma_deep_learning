@@ -1,25 +1,17 @@
-from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from cnn import CustomClassifier
 from torch.optim.lr_scheduler import CyclicLR
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
-from torch.utils.data import DataLoader
 import os
 import time
 from tqdm import tqdm
-from torchsummary import summary
 from collections import Counter
 from torch.utils.data import WeightedRandomSampler
 from sklearn.metrics import cohen_kappa_score
+from utils import get_device, create_transforms, initialize_models
 import argparse
 
-
-
-def get_device():
-    return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def calculate_class_weights(dataset):
     class_counts = [0] * len(dataset.classes)
@@ -30,13 +22,6 @@ def calculate_class_weights(dataset):
     class_weights = 1. / torch.tensor(class_counts, dtype=torch.float)
     return class_weights / class_weights.sum()
 
-def create_transforms():
-    return transforms.Compose([
-        transforms.Resize(299),  # Resize the images to 299 x 299 pixels
-        transforms.CenterCrop(299),  # Crop the images to 299 x 299 pixels
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
 
 def load_data(path, transform=None, class_weights=None,batch_size=16):
     """Loader from the data
@@ -77,29 +62,6 @@ def load_data(path, transform=None, class_weights=None,batch_size=16):
 
     return loader
 
-def initialize_models(device):
-    """initialize the models to use
-
-    Args:
-        device (str): Device use during trainning
-
-    Returns:
-        torch.models: initialized models for trainning
-    """
-    inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-    efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-
-    inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
-
-    inception_model = inception_model.to(device)
-    efficientnet_model = efficientnet_model.to(device)
-    
-    print("Initialized models:")
-    print(" - Inception V3 with custom classifier")
-    print(" - EfficientNet B0 with custom classifier")
-
-    return efficientnet_model, inception_model
 
 def create_optimizers(models):
     """Creates the optimazer for each model

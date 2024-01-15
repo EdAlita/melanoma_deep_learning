@@ -1,70 +1,11 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
-from torchvision.models import inception_v3, efficientnet_b0, Inception_V3_Weights, EfficientNet_B0_Weights
-from cnn import CustomClassifier
-from torchvision import transforms
-from torchvision.datasets import ImageFolder
 from tqdm import tqdm
-import numpy as np
 import csv
 from sklearn.metrics import cohen_kappa_score
+from utils import get_device, create_transforms, initialize_models, load_data, load_models 
+import argparse
 
-BATCH_SIZE = 16
-train_data = '../../data_mult/val/'
-
-
-def get_device():
-    return torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-def create_transforms():
-    return transforms.Compose([
-        transforms.Resize((299, 299)),  # Adjusted for Inception V3
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-def initialize_models(device):
-    try: 
-        inception_model = inception_v3(weights=Inception_V3_Weights.IMAGENET1K_V1)
-        efficientnet_model = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
-    except RuntimeError as e:
-        inception_model = inception_v3(pretrained=True)
-        efficientnet_model = efficientnet_b0(pretrained=True)
-        
-    inception_model.fc = CustomClassifier(inception_model.fc.in_features)
-    efficientnet_model.classifier[1] = CustomClassifier(efficientnet_model.classifier[1].in_features)
-
-    inception_model = inception_model.to(device)
-    efficientnet_model = efficientnet_model.to(device)
-    
-    print("Initialized models:")
-    print(" - Inception V3 with custom classifier")
-    print(" - EfficientNet B0 with custom classifier")
-
-    return efficientnet_model, inception_model
-
-def load_data(path, transform):
-    dataset = ImageFolder(root=path, transform=transform)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-    print("Loaded dataset:")
-    print(f" - Number of images: {len(dataset)}")
-    print(f" - Number of classes: {len(dataset.classes)}")
-    print(f" - Class names: {dataset.classes}")
-    print(f" - Batch size: {BATCH_SIZE}")
-
-    return loader
-
-def load_models(model, model_paths):
-    models = []
-    for path in model_paths:
-        model = model
-        model.load_state_dict(torch.load(path))
-        model.eval()
-        models.append(model)
-    return models
 
 def generate_class_predictions(models, dataloader, device):
     class_predictions = []
@@ -107,7 +48,7 @@ def calculate_accuracy(predictions, true_labels):
     accuracy = correct / total
     return accuracy
 
-def main(train_data_path=train_data,run_path='out/run_1/',type='val'):
+def main(train_data_path='../data_mult/train',run_path='out/run_1/',type='val',batch_size=16):
     device = get_device()
     print(f"Using device: {device}")
 
@@ -160,4 +101,16 @@ def main(train_data_path=train_data,run_path='out/run_1/',type='val'):
             f.write(f"Image {idx}: Predicted Class {pred.item()}, True Class {true_label.item()}, Vote counts: {vote_counts[idx].tolist()}\n")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run the ensemble model prediction")
+
+    # Add arguments
+    parser.add_argument('--train_data_path', type=str, default='train_data', help='Path to the training data')
+    parser.add_argument('--run_path', type=str, default='out/run_1/', help='Path to save or load the models')
+    parser.add_argument('--type', type=str, choices=['val', 'test'], default='val', help='Type of dataset to use (validation or test)')
+    parser.add_argument('--BATCH_SIZE', type=int, default=16, help='Batch size for model predictions')
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    # Call main function with parsed arguments
+    main(args.train_data_path, args.run_path, args.type, args.BATCH_SIZE)
