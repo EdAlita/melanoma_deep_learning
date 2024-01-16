@@ -37,7 +37,7 @@ def initialize_models(device):
 
 def load_data(path, transform,BATCH_SIZE):
     dataset = ImageFolder(root=path, transform=transform)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     print("Loaded dataset:")
     print(f" - Number of images: {len(dataset)}")

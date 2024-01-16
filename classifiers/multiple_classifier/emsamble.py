@@ -5,15 +5,28 @@ import csv
 from sklearn.metrics import cohen_kappa_score
 from utils import get_device, create_transforms, initialize_models, load_data, load_models 
 import argparse
+from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 
+def load_data(path, transform, batch_size):
+    dataset = ImageFolder(root=path, transform=transform)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-def generate_class_predictions(models, dataloader, device):
+    print("Loaded dataset:")
+    print(f" - Number of images: {len(dataset)}")
+    print(f" - Number of classes: {len(dataset.classes)}")
+    print(f" - Class names: {dataset.classes}")
+    print(f" - Batch size: {batch_size}")
+
+    return loader
+
+def generate_class_predictions(models, dataloader, device,batch_size):
     class_predictions = []
     all_true_labels = []
     image_names = []
 
     for batch_idx, (X_batch, y_batch) in tqdm(enumerate(dataloader), desc="Generating Class Predictions"):
-        start_idx = batch_idx * BATCH_SIZE
+        start_idx = batch_idx * batch_size
         end_idx = start_idx + X_batch.size(0)
         batch_image_names = [dataloader.dataset.samples[i][0] for i in range(start_idx, end_idx)]
         image_names.extend(batch_image_names)
@@ -52,16 +65,16 @@ def main(train_data_path='../data_mult/train',run_path='out/run_1/',type='val',b
     device = get_device()
     print(f"Using device: {device}")
 
-    _ , inception= initialize_models(device)
+    inception , _ = initialize_models(device)
 
 
     transform = create_transforms()
 
-    train_loader = load_data(train_data_path, transform)
+    train_loader = load_data(train_data_path, transform,batch_size)
     #validation_loader = load_data(val_data_path, transform)
 
     model_paths = [
-    f'{run_path}Inception3_epoch_31.pth', # Rank 1, Accuracy: 0.9228, Kappa: 0.8589
+    f'{run_path}EfficientNet_best.pth', # Rank 1, Accuracy: 0.9228, Kappa: 0.8589
     #f'{run_path}Inception3_epoch_32.pth', # Rank 2, Accuracy: 0.9181, Kappa: 0.8497
     #f'{run_path}Inception3_epoch_28.pth', # Rank 3, Accuracy: 0.9173, Kappa: 0.8474
     #f'{run_path}Inception3_epoch_22.pth', # Rank 4, Accuracy: 0.9165, Kappa: 0.8474
@@ -77,7 +90,7 @@ def main(train_data_path='../data_mult/train',run_path='out/run_1/',type='val',b
 
 
     models = load_models(inception, model_paths)
-    class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device)
+    class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device,batch_size)
     final_predictions, vote_counts = maximum_voting(class_predictions)
     if type == 'val':
         accuracy = calculate_accuracy(final_predictions, true_labels)
@@ -85,7 +98,7 @@ def main(train_data_path='../data_mult/train',run_path='out/run_1/',type='val',b
         kappa = cohen_kappa_score(final_predictions.numpy(), true_labels.numpy())
         print(f"Cohen's Kappa: {kappa:.4f}")
     
-    class_names = train_loader.dataset.classes
+    class_names = ['bcc','mel','scc']
     with open(f"predictions_mult_{type}.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["image_name", "class_number", "class_name"])

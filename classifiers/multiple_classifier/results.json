@@ -14,5 +14,8 @@
 "Inception3_epoch20": {
     "accuracy": 0.9102,
     "Kappa":0.8373
+},"EfficientNet_epoch20_binary_scc": {
+    "accuracy": 0.9362,
+    "Kappa":0.8842
 }
 }

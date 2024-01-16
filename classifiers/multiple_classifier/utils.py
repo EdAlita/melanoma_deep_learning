@@ -35,15 +35,15 @@ def initialize_models(device):
 
     return efficientnet_model, inception_model
 
-def load_data(path, transform):
+def load_data(path, transform, batch_size):
     dataset = ImageFolder(root=path, transform=transform)
-    loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
     print("Loaded dataset:")
     print(f" - Number of images: {len(dataset)}")
     print(f" - Number of classes: {len(dataset.classes)}")
     print(f" - Class names: {dataset.classes}")
-    print(f" - Batch size: {BATCH_SIZE}")
+    print(f" - Batch size: {batch_size}")
 
     return loader
 

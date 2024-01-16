@@ -24,17 +24,12 @@ def evaluate_model(model, val_loader, device):
             correct += (predicted == labels).sum().item()
     return correct / total
 
-
-def initialize_models(filepath):
-    checkpoint = torch.load(filepath, map_location='cpu')
-    print(checkpoint.keys())
-
 def evaluating_best_classifier(val_dir, root_out, batch_size=16):
     device = get_device()
     print(f"Using device: {device}")
     
     transform = create_transforms()
-    val_loader = load_data(val_dir, transform)
+    val_loader = load_data(val_dir, transform,batch_size)
 
     model_paths = {
         'EfficientNet': os.path.join(root_out, 'EfficientNet_best.pth'),
@@ -66,7 +61,7 @@ def main(num_classifiers=60,val_dir = '../../data/val/',root_out = 'out/run_4/',
 
     model_accuracies = {}
     for path in tqdm(model_paths, desc="Model Evaluation Progress"):
-        model = load_checkpoint(path, device, inception)
+        model = load_checkpoint(path, device, inception_model)
         accuracy = evaluate_model(model, val_loader, device)
         model_accuracies[path] = accuracy
         

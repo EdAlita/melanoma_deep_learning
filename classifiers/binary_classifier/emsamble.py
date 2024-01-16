@@ -2,8 +2,22 @@ import torch
 from tqdm import tqdm
 import numpy as np
 import csv
-from utils import get_device, create_transforms, initialize_models, load_data
+from utils import get_device, create_transforms, initialize_models
 import argparse
+from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
+
+def load_data(path, transform, batch_size):
+    dataset = ImageFolder(root=path, transform=transform)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
+
+    print("Loaded dataset:")
+    print(f" - Number of images: {len(dataset)}")
+    print(f" - Number of classes: {len(dataset.classes)}")
+    print(f" - Class names: {dataset.classes}")
+    print(f" - Batch size: {batch_size}")
+
+    return loader
 
 def load_models(model, model_paths):
     models = []
@@ -14,7 +28,7 @@ def load_models(model, model_paths):
         models.append(model)
     return models
 
-def generate_class_predictions(models, dataloader, device,BATCH_SIZE ):
+def generate_classes_predictions(models, dataloader, device,BATCH_SIZE ):
     class_predictions = []
     all_true_labels = []
     image_names = []
@@ -54,7 +68,7 @@ def calculate_accuracy(predictions, true_labels):
     accuracy = correct / total
     return accuracy
 
-def main(train_data_path, run_path, model_type, batch_size):
+def main(train_data_path, run_path, batch_size,type):
     device = get_device()
     print(f"Using device: {device}")
 
@@ -63,12 +77,12 @@ def main(train_data_path, run_path, model_type, batch_size):
 
     transform = create_transforms()
 
-    train_loader = load_data(train_data_path, transform)
+    train_loader = load_data(train_data_path, transform,batch_size)
     #validation_loader = load_data(val_data_path, transform)
 
 
     model_paths = [
-        f'{run_path}Inception3_epoch_8.pth',
+        f'{run_path}Inception3_epoch_48.pth',
         #f'{run_path}Inception3_epoch_21.pth',
         #f'{run_path}Inception3_epoch_7.pth',
         #f'{run_path}Inception3_epoch_25.pth',
@@ -77,13 +91,13 @@ def main(train_data_path, run_path, model_type, batch_size):
         ]
 
     models = load_models(inception, model_paths)
-    class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device, BATCH_SIZE)
+    class_predictions, true_labels, image_names = generate_class_predictions(models, train_loader, device, batch_size)
     final_predictions, vote_counts = maximum_voting(class_predictions)
     if type == 'val':
         accuracy = calculate_accuracy(final_predictions, true_labels)
         print(f"Accuracy of the ensemble: {accuracy * 100:.2f}%")
 
-    class_names = train_loader.dataset.classes
+    class_names = ['nevus','others']
     with open(f"predictions_{type}.csv", "w", newline="") as csvfile:
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(["image_name", "class_number", "class_name"])
