@@ -171,10 +171,13 @@ After a lot of testing of different models, our best approach was using a transf
 ![Binary Dataset work flow](figures/binary_class.png)
 *Figure 5: Details of our Deep Learning layers*
 
-In the next figure you can observe a detail result of our binary result test of different approach of the classifcation problem.
+In the next figures you can observe a detail result of our binary result test of different approach of the classifcation problem.
 
 ![Binary test results](figures/binary_results.png)
 *Figure 6: Details of Binary testing scheme*
+
+![Multi-class test results](figures/multiple_results.png)
+*Figure 7: Details of Multi-class testing scheme*
 
 ## Contributing
 - [Yusuf B. Tanrıverdi](https://github.com/yusuftengriverdi)
